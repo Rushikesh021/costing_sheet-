@@ -1,0 +1,183 @@
+// Prisma schema for Greige Cloth Costing System
+// Configured with PostgreSQL / compatible relational database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------
+// ENUMS
+// ----------------------------------------------------
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum YarnType {
+  WARP
+  WEFT
+  BOTH
+}
+
+enum LoomType {
+  AIRJET
+  RAPIER
+  PROJECTILE
+  WATERJET
+  POWERLOOM
+  SULZER
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+// ----------------------------------------------------
+// MODELS
+// ----------------------------------------------------
+
+/// Yarn Rates master table for warp and weft procurement
+model YarnRate {
+  id        String   @id @default(cuid())
+  name      String   // e.g. "40s Combed Compact", "30s Carded"
+  count     Float    // English Cotton Count (Ne), e.g. 40.0, 30.0
+  type      YarnType // WARP, WEFT, or BOTH
+  price     Float    // Rate per kg in active currency
+  isBci     Boolean  @default(false) // Better Cotton Initiative certification
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  qualitiesAsWarp Quality[] @relation("WarpYarn")
+  qualitiesAsWeft Quality[] @relation("WeftYarn")
+
+  @@index([count])
+  @@index([type])
+  @@map("yarn_rates")
+}
+
+/// Weaving conversion job rates per loom type and reed space width
+model JobRate {
+  id        String   @id @default(cuid())
+  loomType  LoomType // Loom machine type (AIRJET, RAPIER, etc.)
+  width     Float    // Reed space / Greige width in inches (e.g. 63.0, 120.0)
+  rate      Float    // Weaving rate (per pick or per meter)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  qualities Quality[]
+
+  @@index([loomType, width])
+  @@map("job_rates")
+}
+
+/// Warping and sizing chemical formulation costs by yarn count
+model SizingCost {
+  id        String   @id @default(cuid())
+  count     Float    @unique // Yarn count (Ne)
+  cost      Float    // Sizing chemical & process cost per kg of yarn
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sizing_costs")
+}
+
+/// Fabric construction specifications and quality master
+model Quality {
+  id          String   @id @default(cuid())
+  name        String   // Construction name, e.g. "Cotton Poplin 40x40 133x72 63\""
+  width       Float    // Greige fabric width in inches
+  epi         Int      // Ends Per Inch (warp density)
+  ppi         Int      // Picks Per Inch (weft density)
+  
+  // Warp Yarn reference
+  warpYarnId  String
+  warpYarn    YarnRate @relation("WarpYarn", fields: [warpYarnId], references: [id])
+
+  // Weft Yarn reference
+  weftYarnId  String
+  weftYarn    YarnRate @relation("WeftYarn", fields: [weftYarnId], references: [id])
+
+  // Weaving Job Rate reference
+  jobRateId   String
+  jobRate     JobRate  @relation(fields: [jobRateId], references: [id])
+
+  wastage     Float    @default(3.0) // Total yarn wastage percentage (e.g. 3.0%)
+  warpGala    Float    @default(6.5) // Warp crimp / gala percentage (e.g. 6.5%)
+  weftGala    Float    @default(4.0) // Weft crimp / gala percentage (e.g. 4.0%)
+  notes       String?  @db.Text      // Weaver remarks, blend info, or weave structure
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  costings    Costing[]
+  quotations  Quotation[]
+
+  @@index([warpYarnId])
+  @@index([weftYarnId])
+  @@index([jobRateId])
+  @@map("qualities")
+}
+
+/// Greige fabric cost calculations and margin analysis
+model Costing {
+  id             String   @id @default(cuid())
+  qualityId      String
+  quality        Quality  @relation(fields: [qualityId], references: [id], onDelete: Cascade)
+  
+  totalCost      Float    // Calculated ex-mill manufacturing cost per meter
+  suggestedPrice Float    // Suggested quoted selling price per meter
+  marginPercent  Float    // Target profit margin percentage (e.g. 12.0%)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([qualityId])
+  @@map("costings")
+}
+
+/// Commercial price quotations sent to buyers and clients
+model Quotation {
+  id            String          @id @default(cuid())
+  customerName  String          // Buyer / Trading house name
+  customerPhone String?         // Contact phone number
+  
+  qualityId     String
+  quality       Quality         @relation(fields: [qualityId], references: [id])
+  
+  quantity      Float           // Order volume in linear meters
+  rate          Float           // Quoted price per meter
+  deliveryDays  Int             // Promised delivery lead time in days
+  status        QuotationStatus @default(DRAFT) // DRAFT, SENT, ACCEPTED, REJECTED, EXPIRED
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([qualityId])
+  @@index([status])
+  @@map("quotations")
+}
+
+/// System user authentication and role-based access control
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  role      Role     @default(USER) // ADMIN or USER
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
