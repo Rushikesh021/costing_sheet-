@@ -9,6 +9,8 @@ const badgeVariants = cva(
       variant: {
         default:
           "bg-primary-container text-primary-onContainer border border-primary/20",
+        primary:
+          "bg-primary-container text-primary-onContainer border border-primary/20",
         secondary:
           "bg-secondary-container text-secondary-onContainer border border-secondary/20",
         tertiary:
