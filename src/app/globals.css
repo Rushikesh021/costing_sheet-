@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* MD3 Light Color Palette (Indigo/Blue Contemporary Slate) */
+    --md-primary: 221 83% 53%; /* #2563eb */
+    --md-on-primary: 0 0% 100%;
+    --md-primary-container: 214 100% 94%;
+    --md-on-primary-container: 224 76% 28%;
+
+    --md-secondary: 215 16% 47%;
+    --md-on-secondary: 0 0% 100%;
+    --md-secondary-container: 214 32% 91%;
+    --md-on-secondary-container: 218 39% 16%;
+
+    --md-tertiary: 173 80% 30%;
+    --md-on-tertiary: 0 0% 100%;
+    --md-tertiary-container: 171 77% 91%;
+    --md-on-tertiary-container: 175 84% 16%;
+
+    --md-surface: 210 20% 98%;
+    --md-surface-dim: 216 12% 88%;
+    --md-surface-bright: 0 0% 100%;
+    --md-surface-container-low: 210 17% 96%;
+    --md-surface-container: 214 14% 93%;
+    --md-surface-container-high: 214 13% 90%;
+    --md-surface-container-highest: 214 12% 86%;
+
+    --md-on-surface: 222 47% 11%;
+    --md-on-surface-variant: 215 16% 37%;
+    --md-outline: 214 13% 55%;
+    --md-outline-variant: 214 18% 85%;
+
+    --md-error: 0 72% 51%;
+    --md-error-container: 0 100% 95%;
+    --md-on-error-container: 0 74% 28%;
+
+    --md-success: 142 71% 36%;
+    --md-success-container: 138 76% 92%;
+    --md-on-success-container: 142 76% 20%;
+  }
+
+  .dark {
+    /* MD3 Dark Color Palette */
+    --md-primary: 213 94% 68%;
+    --md-on-primary: 222 84% 18%;
+    --md-primary-container: 221 83% 35%;
+    --md-on-primary-container: 214 100% 93%;
+
+    --md-secondary: 215 20% 75%;
+    --md-on-secondary: 217 33% 17%;
+    --md-secondary-container: 215 25% 27%;
+    --md-on-secondary-container: 214 32% 91%;
+
+    --md-tertiary: 171 67% 65%;
+    --md-on-tertiary: 175 84% 16%;
+    --md-tertiary-container: 174 72% 28%;
+    --md-on-tertiary-container: 171 77% 91%;
+
+    --md-surface: 222 47% 7%;
+    --md-surface-dim: 222 47% 6%;
+    --md-surface-bright: 217 33% 18%;
+    --md-surface-container-low: 222 40% 10%;
+    --md-surface-container: 222 36% 12%;
+    --md-surface-container-high: 221 33% 15%;
+    --md-surface-container-highest: 220 28% 19%;
+
+    --md-on-surface: 210 20% 96%;
+    --md-on-surface-variant: 215 16% 75%;
+    --md-outline: 215 14% 48%;
+    --md-outline-variant: 215 19% 25%;
+
+    --md-error: 0 86% 70%;
+    --md-error-container: 0 74% 28%;
+    --md-on-error-container: 0 100% 95%;
+
+    --md-success: 142 71% 60%;
+    --md-success-container: 142 76% 22%;
+    --md-on-success-container: 138 76% 92%;
+  }
+
+  body {
+    background-color: hsl(var(--md-surface));
+    color: hsl(var(--md-on-surface));
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Material Design 3 Custom Utilities */
+.md-card {
+  background-color: hsl(var(--md-surface-container-low));
+  border: 1px solid hsl(var(--md-outline-variant) / 0.5);
+  border-radius: 1.5rem;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.md-card-interactive {
+  cursor: pointer;
+}
+.md-card-interactive:hover {
+  background-color: hsl(var(--md-surface-container));
+  border-color: hsl(var(--md-outline-variant));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px 3px rgba(0, 0, 0, 0.08);
+}
+
+.md-input {
+  background-color: hsl(var(--md-surface-container-high));
+  border: 1px solid hsl(var(--md-outline-variant));
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  color: hsl(var(--md-on-surface));
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.md-input:focus {
+  outline: none;
+  border-color: hsl(var(--md-primary));
+  box-shadow: 0 0 0 2px hsl(var(--md-primary) / 0.25);
+}
+
+/* Print styling for professional quotation exports */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
